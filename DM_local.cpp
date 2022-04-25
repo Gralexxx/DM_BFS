@@ -1,74 +1,68 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <vector>
-#include <stack>
 #include <queue>
 
 using namespace std;
 
-const string  IN_PATH = "in.txt",
-             OUT_PATH = "out.txt",
-             INF_PATH = "info.txt";
+int BFS(vector<vector<char>> &graph);
+void generate_graph(int v_count);
 
-const char  REL = 1,  // relation - связь
-           CREL = 2;  // checked relation - проверенная связь
-
-int BFS(vector<vector<int>> &graph);
 
 int main()
 {
-   setlocale(0, "");
+   //generate_graph(10000);
 
-   // E - кол-во ребер, V - кол-во вершин
-   int E, V;
-   vector<vector<int>> graph;
+   int V, E;
 
-   ifstream stream(INF_PATH);
-   if (!stream.is_open())
+   ifstream in("info.txt");
+   if (!in.is_open())
    {
-      cerr << "Не удалось открыть файл " << INF_PATH;
+      cerr << "Не удалось открыть файл info";
       return -1;
    }
-   stream >> E >> V;
-   stream.close();
+   in >> V >> E;
 
-   stream = ifstream(IN_PATH);
-   if (!stream.is_open())
+
+   in = ifstream("in.txt");
+   if (!in.is_open())
    {
-      cerr << "Не удалось открыть файл " << IN_PATH;
+      cerr << "Не удалось открыть файл in";
       return -1;
    }
 
-   graph.resize(V);
+
+   vector<vector<char>> graph(V);
    for (int i = 0; i < V; i++)
       graph[i].resize(V);
 
-   for (int r, c, i = 0; i < E; i++)
+   for (int i = 0; i < E; i++)
    {
-      stream >> r >> c;
+      int r, c;
+      in >> r >> c;
 
-      graph[r][c] = REL;
-      graph[c][r] = REL;
+      graph[r][c] = 1;
+      graph[c][r] = 1;
    }
 
-   ofstream out = ofstream(OUT_PATH);
+
+   ofstream out = ofstream("out.txt");
 
    if (E - BFS(graph) == 0)
    {
-       if (E == V - 1)
-           out << "Дерево." << endl;
-       else out << "Не дерево: есть цикл." << endl;
+      if (E == V - 1)
+         out << "Дерево." << endl;
+      else out << "Не дерево: есть цикл." << endl;
    }
    else out << "Не дерево: компонент связности больше 1." << endl;
-
-   cout << "Ok!";
 
    return 0;
 }
 
-int BFS(vector<vector<int>> &graph)
+
+int BFS(vector<vector<char>> &graph)
 {
-   int CE = 0; // СE (checked edges) - кол-во вершин, которые алгоритм перебрал
+   int checked_edges = 0;
 
    queue<int> queue;
    queue.push(0);
@@ -80,16 +74,34 @@ int BFS(vector<vector<int>> &graph)
 
       for (int c = 0; c < graph.size(); c++)
       {
-         if (graph[r][c] == REL)
+         if (graph[r][c] == 1)
          {
             queue.push(c);
-            graph[r][c] = CREL;
-            graph[c][r] = CREL;
+            graph[r][c] = 2;
+            graph[c][r] = 2;
 
-            CE++;
+            checked_edges++;
          }
       }
    }
 
-   return CE;
+   return checked_edges;
+}
+
+void generate_graph(int v_count)
+{
+   ofstream out("info.txt");
+   out << v_count << ' ' << v_count - 1 << endl;
+
+
+   out = ofstream("in.txt");
+
+   int v_num = 0, dif = 1;
+   for (int i = 0; i < v_count; i += 2)
+   {
+      out << v_num << ' ' << dif++ << endl;
+      out << v_num << ' ' << dif++ << endl;
+
+      v_num++;
+   }
 }
